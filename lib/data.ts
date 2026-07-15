@@ -27,7 +27,7 @@ export interface Question {
 }
 
 // 20 题判断式短量表(IPIP 条目改编)
-// 作答: 是=2 / 不确定=1 / 否=0,反向题翻转。每维总分 0~8。
+// 作答: 是=2 / 否=0,反向题翻转。每维总分 0~8。
 export const QUESTIONS: Question[] = [
   // 探索欲 (O)
   { t: "我经常冒出一些别人觉得「想太多」的念头。", dim: "explore" },

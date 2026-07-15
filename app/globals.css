@@ -193,7 +193,6 @@ body {
 .yn-btn:hover { border-color: var(--pine); }
 .yn-btn:active { transform: scale(0.96); background: var(--pine-soft); border-color: var(--pine); }
 .yn-btn:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
-.yn-btn.maybe { flex: 0.72; color: var(--ink-dim); font-weight: 500; font-size: 14px; }
 .tease-banner {
   border: 1px solid var(--line-strong);
   border-left: 3px solid var(--amber);

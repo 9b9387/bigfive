@@ -17,7 +17,7 @@ export interface TestResult {
   key: string;
 }
 
-// 标准量表计分: 每题 0/1/2(反向翻转),每维求和(0~8),≥5 判为高。
+// 标准量表计分: 每题 是=2/否=0(反向翻转),每维求和(0~8),≥5 判为高。
 // 百分位为 demo 占位换算;正式上线应替换为真实作答数据建立的常模。
 export function computeResult(answers: number[]): TestResult {
   const raw: Record<DimKey, number> = { explore: 0, action: 0, empathy: 0, order: 0, calm: 0 };

@@ -29,7 +29,6 @@ export default function Quiz({ qIdx, onAnswer }: { qIdx: number; onAnswer: (v: n
         <div className="q-title">{q.t}</div>
         <div className="yn-row">
           <button className="yn-btn yes" onClick={() => onAnswer(2)}>是</button>
-          <button className="yn-btn maybe" onClick={() => onAnswer(1)}>不确定</button>
           <button className="yn-btn no" onClick={() => onAnswer(0)}>否</button>
         </div>
       </div>
