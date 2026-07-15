@@ -29,7 +29,7 @@ export default function PaywallModal({ invites, dealEnd, onExtendDeal, onCheckou
   return (
     <Modal onClose={onClose}>
       <h3>解锁你的完整原型报告</h3>
-      <p className="modal-sub">隐藏弱点 · 职业方向 · 相克原型 · 完整五维百分位</p>
+      <p className="modal-sub">6 大板块 · 2,800+ 字:隐藏弱点 / 能量清单 / 职业方向 / 亲密关系 / 相克原型 / 关键窗口</p>
       <div className="countdown">
         限时 66% OFF · 优惠剩余 <b>{cd}</b>
       </div>

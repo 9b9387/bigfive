@@ -13,6 +13,8 @@ export interface TestResult {
   rarity: string;
   dimValues: DimValue[];
   key: string;
+  conflictQ: number; // 与原型模式相矛盾的题号(1 起),用于个人化好奇心钩子
+  topDim: string; // 最高维度显示名
 }
 
 // 标准量表计分: 每题 是=2/否=0(反向翻转),每维求和(0~8),≥5 判为高。
@@ -40,7 +42,15 @@ export function computeResult(answers: number[]): TestResult {
     val: Math.min(97, Math.max(4, Math.round(6 + (raw[d] / 8) * 88 + ((seed + d.length) % 5) - 2))),
     secret: !freeDims.has(d),
   }));
-  return { arch, rival, variant, rarity, dimValues, key };
+  // 个人化钩子:找一道与该维度整体倾向相矛盾的题(高维度却答了否/低维度却答了是)
+  const conflicts: number[] = [];
+  questions.forEach((q, i) => {
+    const eff = q.rev ? 2 - (answers[i] ?? 0) : answers[i] ?? 0;
+    const hi = raw[q.dim] >= 5;
+    if ((hi && eff === 0) || (!hi && eff === 2)) conflicts.push(i + 1);
+  });
+  const conflictQ = conflicts.length ? conflicts[seed % conflicts.length] : (seed % questions.length) + 1;
+  return { arch, rival, variant, rarity, dimValues, key, conflictQ, topDim: dimNames[sorted[0]] };
 }
 
 // 锁定时用乱序占位文本(模糊之下隐约"有内容",但即使去掉 blur 也读不到真答案)

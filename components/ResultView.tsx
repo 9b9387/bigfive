@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getContent, lockedSections } from "@/lib/content";
+import { freeInsight, getContent, lockedSections } from "@/lib/content";
 import { TestResult, scramble } from "@/lib/scoring";
 import TopoMark from "./TopoMark";
 
@@ -19,8 +19,10 @@ export default function ResultView({
   result: R, unlocked, unlockMethod, revealFlash, onOpenPaywall, onOpenShare, onReset,
 }: Props) {
   const locked = !unlocked;
-  const { barnum } = getContent();
-  const sections = lockedSections(R.arch, R.variant, R.rival);
+  const { barnum, reportMeta } = getContent();
+  const vars = { arch: R.arch, variant: R.variant, rival: R.rival, conflictQ: R.conflictQ, topDim: R.topDim };
+  const free = freeInsight(vars);
+  const sections = lockedSections(vars);
   const fileNo = `NO. ${R.key}-${R.variant.name === "静水型" ? "S" : "T"}`;
 
   // 维度条入场动画:挂载后再展开到目标宽度
@@ -46,9 +48,7 @@ export default function ResultView({
         <div className="arch-name">{R.arch.name}</div>
         <div>
           <span className="arch-variant">{R.variant.name}</span>
-          <span className="rarity-pill">
-            人群稀有度 {R.rarity}%
-          </span>
+          <span className="rarity-pill">人群稀有度 {R.rarity}%</span>
         </div>
         <p className="tagline">{R.arch.tagline} · {R.variant.desc}</p>
       </div>
@@ -67,35 +67,44 @@ export default function ResultView({
             </span>
           </div>
         ))}
-        <p className="dim-note">百分位基于样本常模:「前 20%」表示该维度得分超过 80% 的人。</p>
+        <p className="dim-note">
+          百分位基于样本常模:「前 20%」表示该维度得分超过 80% 的人。
+          {locked && "打码维度将在完整报告中揭示。"}
+        </p>
 
-        <div className="locked-zone">
-          <div className="lockable">
-            {sections.map((s) => (
-              <div key={s.title}>
-                <div className="section-title">{s.title}</div>
-                <p style={{ fontSize: 14, color: "var(--ink-dim)" }}>
-                  {locked ? scramble(s.body) : s.body}
-                </p>
-              </div>
-            ))}
-          </div>
-          {locked && (
-            <div className="lock-overlay">
-              <svg className="lock-ico" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                <rect x="4.5" y="10.5" width="15" height="10" rx="2" />
-                <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
-              </svg>
-              <p>
-                <b>你最想知道的 3 个答案已生成</b>
-                <br />
-                隐藏弱点 · 职业方向 · 相克原型
-              </p>
-              <button className="btn" onClick={onOpenPaywall}>解锁完整报告</button>
-              <span className="unlock-count">已有 683,204 人解锁</span>
+        {/* 免费板块:完整可读,建立"报告确实有料"的信任 */}
+        <div className="section-title">{free.title}</div>
+        <p className="sec-body">{free.body}</p>
+
+        {/* 锁定板块:标题与钩子可读,正文模糊截断 —— 好奇心缺口 */}
+        {sections.map((s) => (
+          <div key={s.title} className="locked-sec">
+            <div className="section-title">
+              {s.title}
+              {locked && <span className="lock-flag">已生成</span>}
             </div>
-          )}
-        </div>
+            <p className="section-hook">{s.hook}</p>
+            {locked && <p className="section-stat">{s.stat}</p>}
+            <p className={`sec-body lockable${locked ? " clamped" : ""}`}>
+              {locked ? scramble(s.body) : s.body}
+            </p>
+          </div>
+        ))}
+
+        {locked && (
+          <div className="cta-block">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+              <rect x="4.5" y="10.5" width="15" height="10" rx="2" />
+              <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
+            </svg>
+            <p>
+              <b>你的完整报告已生成</b>
+              {reportMeta.sections} 个板块 · {reportMeta.words} 字,按你的 20 组作答定制
+            </p>
+            <button className="btn" onClick={onOpenPaywall}>解锁完整报告</button>
+            <span className="unlock-count">已有 {reportMeta.unlockCount} 人解锁 · 解锁后永久可读</span>
+          </div>
+        )}
       </div>
 
       {!locked && (

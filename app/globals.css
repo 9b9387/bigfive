@@ -277,22 +277,48 @@ body {
 }
 .dim-note { font-size: 11.5px; color: var(--ink-dim); margin-top: 6px; }
 
-/* 锁定区域 */
-.locked-zone { position: relative; margin-top: 8px; }
-.lockable { transition: filter 1s ease, opacity 1s ease; }
-.locked .lockable { filter: blur(7px); user-select: none; pointer-events: none; }
+/* 锁定区域:标题+钩子可读,正文模糊截断 —— 好奇心缺口 */
+.lockable { transition: filter 1s ease, opacity 1s ease, max-height 1s ease; }
+.locked .lockable { filter: blur(6px); user-select: none; pointer-events: none; }
 .locked .dim-val.secret { filter: blur(5px); }
-.lock-overlay {
-  position: absolute; inset: -10px; z-index: 5;
-  display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px;
-  background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--card) 78%, transparent) 24%, color-mix(in srgb, var(--card) 96%, transparent) 58%);
-  border-radius: 10px; text-align: center; padding: 20px;
+.sec-body { font-size: 14px; color: var(--ink-dim); }
+.sec-body.clamped {
+  max-height: 66px; overflow: hidden;
+  -webkit-mask-image: linear-gradient(180deg, #000 20%, transparent 95%);
+  mask-image: linear-gradient(180deg, #000 20%, transparent 95%);
 }
-.lock-overlay .lock-ico { color: var(--amber); }
-.lock-overlay p { font-size: 13.5px; color: var(--ink-dim); max-width: 270px; }
-.lock-overlay p b { color: var(--ink); font-family: var(--font-serif); font-size: 15px; }
-.lock-overlay .btn { max-width: 280px; }
-.unlock-count { font-size: 12px; color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+.locked-sec { margin-top: 4px; }
+.lock-flag {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+  color: var(--amber); border: 1px solid var(--amber);
+  padding: 1px 8px; border-radius: 4px; flex-shrink: 0;
+}
+.section-hook {
+  font-family: var(--font-serif);
+  font-size: 14.5px; font-weight: 600; line-height: 1.7;
+  color: var(--ink);
+  padding-left: 10px; border-left: 2px solid var(--amber);
+  margin-bottom: 6px;
+}
+.section-stat {
+  font-size: 11px; color: var(--ink-dim); letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums; margin-bottom: 8px;
+}
+.cta-block {
+  margin-top: 22px; padding: 20px 18px;
+  border: 1.5px solid var(--pine); border-radius: 12px;
+  background: var(--pine-soft);
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  text-align: center;
+}
+.cta-block svg { color: var(--amber); }
+.cta-block p { font-size: 13px; color: var(--ink-dim); }
+.cta-block p b {
+  display: block; color: var(--ink);
+  font-family: var(--font-serif); font-size: 16px; margin-bottom: 2px;
+}
+.cta-block .btn { max-width: 300px; }
+.unlock-count { font-size: 11.5px; color: var(--ink-dim); font-variant-numeric: tabular-nums; }
 .reveal-flash { animation: revealGlow 1.4s ease; }
 @keyframes revealGlow {
   0% { box-shadow: 0 0 0 rgba(168, 123, 36, 0); }

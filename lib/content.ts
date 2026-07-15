@@ -25,9 +25,13 @@ export interface Variant {
   desc: string;
 }
 
+// 锁定板块模板。body/hook/stat 支持占位符:
+// {arch} {variant} {variantClause} {loveClause} {rival} {rivalIcon} {conflictQ} {topDim}
 export interface LockedSectionTemplate {
   title: string;
-  body: string; // 支持占位符 {arch} {variant} {variantClause} {rival} {rivalIcon}
+  hook: string; // 可读的好奇心钩子(锁定态下不模糊)
+  stat: string; // 板块元信息(字数/条目数),制造"内容量"感知
+  body: string; // 正文(锁定态下模糊)
 }
 
 export interface Content {
@@ -36,8 +40,11 @@ export interface Content {
   archetypes: Record<string, Archetype>;
   variants: { still: Variant; tide: Variant };
   barnum: string;
+  freeInsight: { title: string; body: string };
   lockedSections: LockedSectionTemplate[];
   variantClauses: Record<string, string>;
+  variantLoveClauses: Record<string, string>;
+  reportMeta: { sections: number; words: string; unlockCount: string };
   teases: Record<string, string>;
   anaSteps: string[];
   toastPool: [string, string][];
@@ -60,23 +67,60 @@ export function getContent(): Content {
   return cache;
 }
 
+// 模板插值所需的个人化字段(由 scoring 计算)
+export interface ReportVars {
+  arch: Archetype;
+  variant: Variant;
+  rival: Archetype;
+  conflictQ: number; // 与原型模式相矛盾的题号(1 起),个人化钩子
+  topDim: string; // 最高维度显示名
+}
+
 export interface LockedSection {
   title: string;
+  hook: string;
+  stat: string;
   body: string;
 }
 
-// 渲染锁定板块:将模板占位符替换为当前结果
-export function lockedSections(arch: Archetype, variant: Variant, rival: Archetype): LockedSection[] {
+function interpolate(tpl: string, vars: Record<string, string>): string {
+  return tpl.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? "");
+}
+
+function buildVars(r: ReportVars): Record<string, string> {
   const c = getContent();
-  const vars: Record<string, string> = {
-    arch: arch.name,
-    variant: variant.name,
-    variantClause: c.variantClauses[variant.name] ?? "",
-    rival: rival.name,
-    rivalIcon: rival.icon,
+  return {
+    arch: r.arch.name,
+    variant: r.variant.name,
+    variantClause: c.variantClauses[r.variant.name] ?? "",
+    loveClause: c.variantLoveClauses[r.variant.name] ?? "",
+    rival: r.rival.name,
+    rivalIcon: r.rival.icon,
+    conflictQ: String(r.conflictQ),
+    topDim: r.topDim,
   };
+}
+
+// 渲染免费预览板块
+export function freeInsight(r: ReportVars): LockedSection {
+  const c = getContent();
+  const vars = buildVars(r);
+  return {
+    title: interpolate(c.freeInsight.title, vars),
+    hook: "",
+    stat: "",
+    body: interpolate(c.freeInsight.body, vars),
+  };
+}
+
+// 渲染锁定板块:将模板占位符替换为当前结果
+export function lockedSections(r: ReportVars): LockedSection[] {
+  const c = getContent();
+  const vars = buildVars(r);
   return c.lockedSections.map((s) => ({
-    title: s.title,
-    body: s.body.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? ""),
+    title: interpolate(s.title, vars),
+    hook: interpolate(s.hook, vars),
+    stat: interpolate(s.stat, vars),
+    body: interpolate(s.body, vars),
   }));
 }
