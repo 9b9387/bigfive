@@ -116,12 +116,6 @@ body {
   display: flex; align-items: center; gap: 8px;
 }
 #topbar .logo svg { color: var(--pine); }
-#resetBtn {
-  font-size: 11px; color: var(--ink-dim);
-  background: none; border: 1px solid var(--line); border-radius: 6px;
-  padding: 3px 10px; cursor: pointer;
-}
-#resetBtn:hover { border-color: var(--line-strong); }
 
 /* ============ 落地页 ============ */
 .hero { position: relative; padding: 26px 0 8px; }

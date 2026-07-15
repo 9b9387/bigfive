@@ -34,31 +34,16 @@ const DEFAULT_STATE: AppState = {
   unlocked: false, unlockMethod: null, dealEnd: null,
 };
 
-const LS_KEY = "paywall_demo_v2";
-
 type ModalKind = null | { type: "paywall" } | { type: "share" } | { type: "checkout"; price: number };
 
 interface ToastItem { id: number; content: ReactNode; out: boolean; }
 
 export default function Home() {
   const [S, setS] = useState<AppState>(DEFAULT_STATE);
-  const [hydrated, setHydrated] = useState(false);
   const [modal, setModal] = useState<ModalKind>(null);
   const [revealFlash, setRevealFlash] = useState(false);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const toastId = useRef(0);
-
-  // localStorage 持久化(仅客户端,避免 SSR 水合不一致)
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(LS_KEY);
-      if (saved) setS(JSON.parse(saved));
-    } catch { /* 忽略损坏数据 */ }
-    setHydrated(true);
-  }, []);
-  useEffect(() => {
-    if (hydrated) localStorage.setItem(LS_KEY, JSON.stringify(S));
-  }, [S, hydrated]);
 
   const toast = useCallback((content: ReactNode) => {
     const id = ++toastId.current;
@@ -84,7 +69,6 @@ export default function Home() {
 
   // ---------- 交互 ----------
   const resetDemo = () => {
-    localStorage.removeItem(LS_KEY);
     setModal(null);
     setRevealFlash(false);
     setS(DEFAULT_STATE);
@@ -135,7 +119,6 @@ export default function Home() {
           <TopoMark size={20} />
           自然人格实验室
         </span>
-        <button id="resetBtn" onClick={resetDemo}>重置演示</button>
       </div>
 
       {S.stage === "landing" && <Landing onStart={startQuiz} />}
