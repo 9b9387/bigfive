@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BARNUM, lockedSections } from "@/lib/data";
+import { getContent, lockedSections } from "@/lib/content";
 import { TestResult, scramble } from "@/lib/scoring";
 import TopoMark from "./TopoMark";
 
@@ -19,6 +19,7 @@ export default function ResultView({
   result: R, unlocked, unlockMethod, revealFlash, onOpenPaywall, onOpenShare, onReset,
 }: Props) {
   const locked = !unlocked;
+  const { barnum } = getContent();
   const sections = lockedSections(R.arch, R.variant, R.rival);
   const fileNo = `NO. ${R.key}-${R.variant.name === "静水型" ? "S" : "T"}`;
 
@@ -51,7 +52,7 @@ export default function ResultView({
         </div>
         <p className="tagline">{R.arch.tagline} · {R.variant.desc}</p>
       </div>
-      <p className="barnum">{BARNUM}</p>
+      <p className="barnum">{barnum}</p>
 
       <div className={`card${locked ? " locked" : ""}${revealFlash ? " reveal-flash" : ""}`}>
         <div className="section-title">五维人格地貌</div>

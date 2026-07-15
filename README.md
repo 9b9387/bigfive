@@ -11,7 +11,8 @@
 
 ## 结构
 
-- `lib/data.ts` — 题库、原型表、文案(改测试主题只需改这里)
+- `public/content.json` — **全部可编辑内容**:题库、原型表、型态、锁定板块模板、文案(改测试主题只需编辑这个 JSON,运行时动态加载)
+- `lib/content.ts` — 内容加载层:类型定义、fetch 缓存、锁定板块模板插值(占位符 `{arch}` `{variant}` `{variantClause}` `{rival}` `{rivalIcon}`)
 - `lib/scoring.ts` — 量表计分与原型匹配(常模百分位为占位换算)
 - `lib/draw.ts` — 分享海报 / 假二维码 Canvas 绘制
 - `components/` — 落地页、答题、分析动画、结果页、付费墙、分享、收银台

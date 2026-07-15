@@ -1,6 +1,4 @@
-import {
-  ARCHETYPES, Archetype, DIMS, DIM_NAMES, DimKey, QUESTIONS, VARIANTS, Variant,
-} from "./data";
+import { Archetype, DIMS, DimKey, Variant, getContent } from "./content";
 
 export interface DimValue {
   name: string;
@@ -20,24 +18,25 @@ export interface TestResult {
 // 标准量表计分: 每题 是=2/否=0(反向翻转),每维求和(0~8),≥5 判为高。
 // 百分位为 demo 占位换算;正式上线应替换为真实作答数据建立的常模。
 export function computeResult(answers: number[]): TestResult {
+  const { questions, archetypes, variants, dimNames } = getContent();
   const raw: Record<DimKey, number> = { explore: 0, action: 0, empathy: 0, order: 0, calm: 0 };
-  QUESTIONS.forEach((q, i) => {
-    const v = answers[i] ?? 1;
+  questions.forEach((q, i) => {
+    const v = answers[i] ?? 0;
     raw[q.dim] += q.rev ? 2 - v : v;
   });
   const seed = DIMS.reduce((s, d, i) => s + raw[d] * (7 + i * 3), 0);
   const typeDims: DimKey[] = ["explore", "action", "empathy", "order"];
   const key = typeDims.map((d) => (raw[d] >= 5 ? "1" : "0")).join("");
   const rivalKey = key.split("").map((c) => (c === "1" ? "0" : "1")).join("");
-  const arch = ARCHETYPES[key];
-  const rival = ARCHETYPES[rivalKey];
-  const variant = raw.calm >= 5 ? VARIANTS.still : VARIANTS.tide;
+  const arch = archetypes[key];
+  const rival = archetypes[rivalKey];
+  const variant = raw.calm >= 5 ? variants.still : variants.tide;
   const rarity = (2.2 + (seed % 47) / 10).toFixed(1);
   // 最高与最低两维免费展示,中间三维打码 → 好奇心缺口
   const sorted = [...DIMS].sort((a, b) => raw[b] - raw[a]);
   const freeDims = new Set([sorted[0], sorted[4]]);
   const dimValues = DIMS.map((d) => ({
-    name: DIM_NAMES[d],
+    name: dimNames[d],
     val: Math.min(97, Math.max(4, Math.round(6 + (raw[d] / 8) * 88 + ((seed + d.length) % 5) - 2))),
     secret: !freeDims.has(d),
   }));

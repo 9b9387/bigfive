@@ -1,18 +1,19 @@
 "use client";
 
-import { QUESTIONS, TEASES } from "@/lib/data";
+import { getContent } from "@/lib/content";
 
 export default function Quiz({ qIdx, onAnswer }: { qIdx: number; onAnswer: (v: number) => void }) {
-  const q = QUESTIONS[qIdx];
-  const pct = Math.round((qIdx / QUESTIONS.length) * 100);
-  const tease = TEASES[qIdx];
+  const { questions, teases } = getContent();
+  const q = questions[qIdx];
+  const pct = Math.round((qIdx / questions.length) * 100);
+  const tease = teases[String(qIdx)];
 
   return (
     <div className="screen">
       <div className="progress-wrap">
         <div className="progress-label">
           <span className="q-no">
-            {String(qIdx + 1).padStart(2, "0")} <span style={{ color: "var(--ink-dim)", fontSize: 12 }}>/ {QUESTIONS.length}</span>
+            {String(qIdx + 1).padStart(2, "0")} <span style={{ color: "var(--ink-dim)", fontSize: 12 }}>/ {questions.length}</span>
           </span>
           <span>{pct}%</span>
         </div>

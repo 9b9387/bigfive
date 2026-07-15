@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { QUESTIONS, TOAST_POOL } from "@/lib/data";
+import { getContent, loadContent } from "@/lib/content";
 import { computeResult } from "@/lib/scoring";
 import Landing from "@/components/Landing";
 import Quiz from "@/components/Quiz";
@@ -40,10 +40,16 @@ interface ToastItem { id: number; content: ReactNode; out: boolean; }
 
 export default function Home() {
   const [S, setS] = useState<AppState>(DEFAULT_STATE);
+  const [ready, setReady] = useState(false);
   const [modal, setModal] = useState<ModalKind>(null);
   const [revealFlash, setRevealFlash] = useState(false);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const toastId = useRef(0);
+
+  // 内容(题库/原型/文案)来自 public/content.json,加载完成后再渲染主流程
+  useEffect(() => {
+    loadContent().then(() => setReady(true)).catch(console.error);
+  }, []);
 
   const toast = useCallback((content: ReactNode) => {
     const id = ++toastId.current;
@@ -54,13 +60,14 @@ export default function Home() {
 
   // 社交证明:结果页锁定期间滚动播报
   useEffect(() => {
-    if (S.stage !== "result" || S.unlocked) return;
+    if (!ready || S.stage !== "result" || S.unlocked) return;
+    const pool = getContent().toastPool;
     const t = setInterval(() => {
-      const p = TOAST_POOL[Math.floor(Math.random() * TOAST_POOL.length)];
+      const p = pool[Math.floor(Math.random() * pool.length)];
       toast(<>{p[0]}的 <b>{p[1]}**</b> 刚刚解锁了完整报告</>);
     }, 9000);
     return () => clearInterval(t);
-  }, [S.stage, S.unlocked, toast]);
+  }, [ready, S.stage, S.unlocked, toast]);
 
   const result = useMemo(
     () => (S.stage === "result" ? computeResult(S.answers) : null),
@@ -81,7 +88,7 @@ export default function Home() {
       const answers = [...s.answers];
       answers[s.qIdx] = v;
       const qIdx = s.qIdx + 1;
-      return { ...s, answers, qIdx, stage: qIdx >= QUESTIONS.length ? "analyzing" : "quiz" };
+      return { ...s, answers, qIdx, stage: qIdx >= getContent().questions.length ? "analyzing" : "quiz" };
     });
 
   const doUnlock = useCallback((method: "pay" | "share") => {
@@ -107,7 +114,8 @@ export default function Home() {
     if (S.invites >= 3) return;
     const invites = S.invites + 1;
     setS((s) => ({ ...s, invites }));
-    const p = TOAST_POOL[Math.floor(Math.random() * TOAST_POOL.length)];
+    const pool = getContent().toastPool;
+    const p = pool[Math.floor(Math.random() * pool.length)];
     toast(<>{p[0]}的好友 <b>{p[1]}**</b> 通过你的链接开始了测试({invites}/3)</>);
     if (invites >= 3) setTimeout(() => doUnlock("share"), 900);
   };
@@ -121,7 +129,8 @@ export default function Home() {
         </span>
       </div>
 
-      {S.stage === "landing" && <Landing onStart={startQuiz} />}
+      {!ready && null /* content.json 加载中(本地静态文件,瞬时完成) */}
+      {ready && S.stage === "landing" && <Landing onStart={startQuiz} />}
       {S.stage === "quiz" && <Quiz qIdx={S.qIdx} onAnswer={answer} />}
       {S.stage === "analyzing" && (
         <Analyzing onDone={() => setS((s) => ({ ...s, stage: "result" }))} />
